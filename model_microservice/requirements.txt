@@ -1,0 +1,9 @@
+opencv-python==4.10.0.84
+torch==2.9.1
+torchvision==0.24.1
+transformers==4.40.0
+ultralytics==8.4.18
+python-Levenshtein
+Flask
+FastAPI
+pydantic_settings
