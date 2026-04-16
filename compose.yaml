@@ -1,0 +1,9 @@
+services:
+  db:
+    image: 'postgres:latest'
+    environment:
+      - POSTGRES_DB=predictions_db
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"

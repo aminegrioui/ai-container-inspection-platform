@@ -7,3 +7,4 @@ python-Levenshtein
 Flask
 FastAPI
 pydantic_settings
+uvicorn
