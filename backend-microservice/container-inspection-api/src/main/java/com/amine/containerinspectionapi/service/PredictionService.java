@@ -54,47 +54,46 @@ public class PredictionService {
      */
     public PredictionResponseDto uploadAndAnalyze(MultipartFile file) throws IOException {
 
-        // 1 – Save file to the known shared directory
+        // 1 - Check first if the file already in the DB
+        Prediction prediction = new Prediction();
         String originalFilename = file.getOriginalFilename();
+        Optional<Prediction> predictionOptional = repository.findPredictionByImageName(originalFilename);
+        if (predictionOptional.isPresent()) {
+            prediction = predictionOptional.get();
+            return toResponseDto(prediction, false);
+        }
+
+        // 2 – Save file to the known shared directory
         String uniqueName = UUID.randomUUID() + "_" + originalFilename;
         Path target = Paths.get(uploadDir).resolve(originalFilename);
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
         log.info("Saved uploaded file to {}", target);
+        prediction.setImageName(originalFilename);
+        prediction.setStatus(PredictionStatus.PROCESSING);
+        prediction = repository.save(prediction);
 
-        // 2 – Persist initial PROCESSING record
-        Prediction prediction = new Prediction();
-        Optional<Prediction> predictionOptional = repository.findPredictionByImageName(originalFilename);
-        if (predictionOptional.isPresent()) {
-            prediction = predictionOptional.get();
+        // 3 – Call Python (sends only the filename, Python resolves it against its own app.upload.dir)
+        PythonAnalysisResponseDto pythonResponse;
+        try {
+            pythonResponse = pythonClient.analyze(originalFilename);
+        } catch (Exception ex) {
+            log.error("Python service call failed for {}", uniqueName, ex);
+            prediction.setStatus(PredictionStatus.FAILED);
+            repository.save(prediction);
+            throw new RuntimeException("Analysis service unavailable: " + ex.getMessage(), ex);
         }
-        else {
-            prediction.setImageName(originalFilename);
-            prediction.setStatus(PredictionStatus.PROCESSING);
+
+        // 4 – Map response → entity
+        try {
+            mapPythonResponseToEntity(prediction, pythonResponse);
             prediction = repository.save(prediction);
-
-            // 3 – Call Python (sends only the filename, Python resolves it against its own app.upload.dir)
-            PythonAnalysisResponseDto pythonResponse;
-            try {
-                pythonResponse = pythonClient.analyze(originalFilename);
-            } catch (Exception ex) {
-                log.error("Python service call failed for {}", uniqueName, ex);
-                prediction.setStatus(PredictionStatus.FAILED);
-                repository.save(prediction);
-                throw new RuntimeException("Analysis service unavailable: " + ex.getMessage(), ex);
-            }
-
-            // 4 – Map response → entity
-            try{
-                mapPythonResponseToEntity(prediction, pythonResponse);
-                prediction = repository.save(prediction);
-            }catch (Exception ex){
-                repository.delete(prediction);
-                throw new RuntimeException("Analysis service unavailable: " + ex.getMessage(), ex);
-            }
+        } catch (Exception ex) {
+            repository.delete(prediction);
+            throw new RuntimeException("Analysis service unavailable: " + ex.getMessage(), ex);
         }
 
         // 5 – Return DTO
-        return toResponseDto(prediction);
+        return toResponseDto(prediction,true);
     }
 
     // ── Mapping helpers ───────────────────────────────────────────────────
@@ -110,8 +109,6 @@ public class PredictionService {
         prediction.setResult(resp.getConfidence().compareTo(THRESHOLD) > 0 ? "Positiv" : "Negativ");
 
         // Serialize detections map → JSONB string
-
-
         if (resp.getDetections() != null) {
             prediction.setDetections(resp.getDetections());
         }
@@ -120,7 +117,7 @@ public class PredictionService {
         prediction.setRespondedAt(OffsetDateTime.now());
     }
 
-    private PredictionResponseDto toResponseDto(Prediction p) {
+    private PredictionResponseDto toResponseDto(Prediction p, boolean isNewAnalyse) {
         PredictionResponseDto dto = new PredictionResponseDto();
         dto.setId(p.getId());
         dto.setImageName(p.getImageName());
@@ -133,7 +130,6 @@ public class PredictionService {
         dto.setRespondedAt(p.getRespondedAt());
 
         // Parse stored JSONB string back to a JsonNode so Angular gets a real object
-
         if (p.getDetections() != null) {
             try {
                 dto.setDetections(p.getDetections());
@@ -141,6 +137,7 @@ public class PredictionService {
                 throw new RuntimeException("Detection service unavailable: " + e.getMessage(), e);
             }
         }
+        dto.setNewAnalyse(isNewAnalyse);
 
         return dto;
     }

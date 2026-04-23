@@ -21,5 +21,6 @@ public class PredictionResponseDto {
     private DetectionsDto detections;
     private OffsetDateTime createdAt;
     private OffsetDateTime respondedAt;
+    private boolean isNewAnalyse;
 
 }
