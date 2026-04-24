@@ -1,0 +1,104 @@
+<div class="upload-zone"
+     [class.has-image]="state.previewUrl"
+     (click)="!state.previewUrl && fileInput.click()">
+
+  <ng-container *ngIf="!state.previewUrl">
+    <svg class="upload-icon" viewBox="0 0 32 32" fill="none">
+      <path d="M16 4v16M9 11l7-7 7 7M6 24h20"
+            stroke="#4fffb0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="upload-hint">click to select image</span>
+  </ng-container>
+
+  <ng-container *ngIf="state.previewUrl">
+    <img [src]="state.previewUrl" class="preview-img" alt="preview"/>
+    <div class="preview-info">
+      <div class="preview-name">{{ state.file?.name }}</div>
+      <div class="preview-size">
+        {{ (state.file?.size ?? 0) / 1024 | number:'1.0-0' }} KB
+      </div>
+      <span class="preview-badge">bereit zum Senden</span>
+    </div>
+  </ng-container>
+</div>
+
+<input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)"/>
+
+<!-- Actions row -->
+<div class="actions">
+  <button class="btn-upload" (click)="fileInput.click()">
+    {{ state.previewUrl ? 'change image' : 'browse' }}
+  </button>
+  <button class="btn-send"
+          [disabled]="!state.file || state.loading"
+          (click)="onSend()">
+    {{ state.loading ? 'analysing…' : 'analyse' }}
+  </button>
+  <span class="timer" [class.visible]="state.loading">{{ getElapsedSeconds() }}s</span>
+</div>
+
+<!-- Progress bar -->
+<div class="loader-bar" [class.visible]="state.loading">
+  <div class="loader-bar-fill"></div>
+</div>
+
+<!-- Error -->
+<div class="error-box" *ngIf="state.error">
+  {{ state.error }}
+</div>
+
+<!-- Result sections (staggered) -->
+<div class="result-panel" *ngIf="state.response">
+
+  <div class="result-section anim-1">
+    <div class="section-label">Stufe 1 — Klassifizierung</div>
+    <div class="result-row">
+      <span class="result-key">Ergebnis</span>
+      <span class="result-val" [class.positive]="state.response.result === 'Positiv'"
+            [class.negative]="state.response.result === 'Negativ'">
+        {{ state.response.result }}
+      </span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Konfidenz</span>
+      <span class="result-val">{{ state.response.confidence | number:'1.4-4' }}</span>
+    </div>
+    <div class="conf-bar">
+      <div class="conf-fill" [style.width.%]="getConfidencePercent()"></div>
+    </div>
+  </div>
+
+  <div class="result-section anim-2">
+    <div class="section-label">Stufe 2 — OCR Ergebnis</div>
+    <div class="result-row">
+      <span class="result-key">Container-Nr.</span>
+      <span class="result-val ocr">{{ getOcrText() }}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">OCR Konfidenz</span>
+      <span class="result-val">{{ getOcrConfidence() | number:'1.4-4' }}</span>
+    </div>
+  </div>
+
+  <div class="result-section anim-3">
+    <div class="section-label">Pipeline — Details</div>
+    <div class="result-row">
+      <span class="result-key">YOLO Objekte</span>
+      <span class="result-val">{{ getYoloCount() }} erkannt</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Gesamtzeit</span>
+      <span class="result-val dur">{{ state.response.durationMs | number:'1.0-0' }} ms</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Bild</span>
+      <span class="result-val">{{ state.response.imageName }}</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Status</span>
+      <span class="result-val">{{ state.response.status }}</span>
+    </div>
+  </div>
+
+  <button class="reset-btn" (click)="onReset()">neue Analyse</button>
+</div>
