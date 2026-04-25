@@ -1,4 +1,4 @@
-<div class="page">
+<!--<div class="page">
   <div class="page-title">
     <h1>Container Analyse</h1>
     <p>Lade ein Bild hoch — KI erkennt Container-Klasse und liest die Nummer aus</p>
@@ -6,4 +6,47 @@
   <div class="card">
     <app-prediction-upload />
   </div>
+</div>-->
+
+<div class="page">
+
+  <div class="page-title">
+    <h1>Container Analyse</h1>
+    <p>Lade ein Bild hoch — KI erkennt Container-Klasse und liest die Nummer aus</p>
+  </div>
+
+  <div class="card">
+
+    <!-- TAB BAR -->
+    <div class="tabs">
+      <button
+        class="tab"
+        [class.active]="activeTab === 'analyse'"
+        (click)="setTab('analyse')">
+        <span class="tab-icon">⬆</span> Analyse
+      </button>
+      <button
+        class="tab"
+        [class.active]="activeTab === 'history'"
+        (click)="setTab('history')">
+        <span class="tab-icon">🕘</span> History
+      </button>
+    </div>
+
+    <!-- TAB CONTENT -->
+    <div class="tab-body">
+
+      <!-- ANALYSE TAB — your existing component, untouched -->
+      <div *ngIf="activeTab === 'analyse'">
+        <app-prediction-upload />
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div *ngIf="activeTab === 'history'">
+        <app-history />
+      </div>
+
+    </div>
+  </div>
+
 </div>

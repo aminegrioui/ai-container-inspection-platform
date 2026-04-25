@@ -1,0 +1,79 @@
+<!-- Toolbar: search + filter -->
+<div class="toolbar">
+  <input
+    class="search-box"
+    type="text"
+    placeholder="Container-Nr. suchen…"
+    [(ngModel)]="searchText"
+    (ngModelChange)="onSearch()"
+  />
+  <div class="filters">
+    <button
+      *ngFor="let f of filters"
+      class="filter-btn"
+      [class.on]="activeFilter === f"
+      (click)="onFilter(f)">
+      {{ f }}
+    </button>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loader-row" *ngIf="loading">
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- Error -->
+<div class="error-box" *ngIf="error">{{ error }}</div>
+
+<!-- Table -->
+<div class="table-wrap" *ngIf="!loading && !error">
+  <table class="hist-table">
+    <thead>
+    <tr>
+      <th>Bild</th>
+      <th>Container-Nr.</th>
+      <th>Konfidenz</th>
+      <th>Dauer</th>
+      <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let item of items">
+      <td class="td-name">{{ item.imageName }}</td>
+      <td class="td-ocr">{{ item.ocrText ?? '—' }}</td>
+      <td class="td-conf">{{ item.confidence != null ? (item.confidence | number:'1.4-4') : '—' }}</td>
+      <td class="td-dur" >{{ item.durationMs != null ? item.durationMs + ' ms' : '—' }}</td>
+      <td>
+          <span class="badge"
+                [class.badge-ok]="item.status === 'COMPLETED'"
+                [class.badge-err]="item.status === 'ERROR'"
+                [class.badge-proc]="item.status === 'PROCESSING'">
+            {{ item.status }}
+          </span>
+      </td>
+    </tr>
+
+    <!-- empty state -->
+    <tr *ngIf="items.length === 0">
+      <td colspan="5" class="empty">Keine Einträge gefunden</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<div class="pagination" *ngIf="totalItems > 0">
+  <span class="pg-info">{{ rangeStart }}–{{ rangeEnd }} von {{ totalItems }}</span>
+  <div class="pg-btns">
+    <button class="pg-btn" [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">←</button>
+    <button
+      *ngFor="let p of pages"
+      class="pg-btn"
+      [class.current]="p === currentPage"
+      (click)="goToPage(p)">
+      {{ p + 1 }}
+    </button>
+    <button class="pg-btn" [disabled]="currentPage >= totalPages - 1" (click)="goToPage(currentPage + 1)">→</button>
+  </div>
+</div>

@@ -43,7 +43,7 @@ public class PredictionController {
     }
 
 
-    @GetMapping
+    @GetMapping("/history")
     public ResponseEntity<PageResponse<HistoryItemResponse>> getHistory(
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size,
