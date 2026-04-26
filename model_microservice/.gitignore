@@ -16,8 +16,10 @@ __pycache__/
 *.ckpt
 *.onnx
 *.pb
-runs/
-weights/
+
+runs/**
+!**/runs/
+!**/.gitkeep
 
 # ── Jupyter Notebooks ──────────────────────────────────────────────────────────
 .ipynb_checkpoints/
