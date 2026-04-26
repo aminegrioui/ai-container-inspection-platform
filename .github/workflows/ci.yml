@@ -1,0 +1,56 @@
+name: CI - Build All Modules
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # Frontend (Angular)
+      # -------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Angular
+        working-directory: ./frontend-microservice
+        run: |
+          npm install
+          npm run build
+
+      # -------------------------
+      # Backend (Spring Boot)
+      # -------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build Spring Boot
+        working-directory: ./backend-microservice
+        run: ./mvnw clean package -DskipTests
+
+      # -------------------------
+      # FastAPI (Python)
+      # -------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Check FastAPI
+        working-directory: ./model_microservice
+        run: |
+          pip install -r requirements.txt
+          python -m compileall .
