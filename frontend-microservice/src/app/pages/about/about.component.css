@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
+
+
 :host {
   display: block;
   --c-bg:       #0d0f14;
@@ -13,8 +16,6 @@
   --font-mono:  'IBM Plex Mono', 'Courier New', monospace;
   --font-head:  'Syne', sans-serif;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
 
 /* ─── WRAPPER ───────────────────────────────────── */
 .about-wrap {
