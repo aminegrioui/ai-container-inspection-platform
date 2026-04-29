@@ -41,6 +41,13 @@
                 { "type": "anyComponentStyle","maximumWarning": "2kb",   "maximumError": "4kb" }
               ],
               "outputHashing": "all",
+              "optimization": {
+                "scripts": true,
+                "styles": true,
+                "fonts": {
+                  "inline": false
+                }
+              },
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
