@@ -31,7 +31,7 @@ jobs:
         run: |
           export NODE_OPTIONS=--max_old_space_size=6144
           npx ng cache clean
-          npx ng build --configuration production --output-path=dist/browser
+          npx ng build --configuration production
 
   # -------------------------
   # Backend (Spring Boot)
