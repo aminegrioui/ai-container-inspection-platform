@@ -12,6 +12,7 @@ jobs:
   # -------------------------
   build-frontend:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -27,40 +28,45 @@ jobs:
 
       - name: Build Angular
         working-directory: ./frontend-microservice
-        run: npm run build
+        run: |
+          export NODE_OPTIONS=--max_old_space_size=6144
+          npx ng cache clean
+          npm run build -- --configuration production
 
   # -------------------------
   # Backend (Spring Boot)
   # -------------------------
   build-backend:
-   runs-on: ubuntu-latest
-   steps:
-    - uses: actions/checkout@v4
+    runs-on: ubuntu-latest
 
-    - uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: 21
-        cache: 'maven'
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Build Spring Boot
-      working-directory: ./backend-microservice/container-inspection-api
-      run: |
-        chmod +x mvnw
-        ./mvnw clean package -DskipTests
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: 'maven'
+
+      - name: Build Spring Boot
+        working-directory: ./backend-microservice/container-inspection-api
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp clean package -DskipTests
 
   # -------------------------
   # FastAPI (Python)
   # -------------------------
   build-model:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'                          # ✅ Built-in pip cache
+          cache: 'pip'
           cache-dependency-path: model_microservice/requirements.txt
 
       - name: Install & check FastAPI
