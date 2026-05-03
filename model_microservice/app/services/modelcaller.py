@@ -1,22 +1,3 @@
-import os
-import time
-import json
-import cv2
-from PIL import Image
-from ultralytics import YOLO
-import torch
-import transformers
-from transformers import (
-    TrOCRProcessor,
-    VisionEncoderDecoderModel
-)
-from torchvision import datasets, transforms
-import torchvision
-from torchvision.models import (
-
-    efficientnet_b0, EfficientNet_B0_Weights
-)
-
 
 import os
 import time
